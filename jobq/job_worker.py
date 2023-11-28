@@ -68,7 +68,7 @@ class JobWorker:
     async def _pull_and_execute(self) -> Optional[Job]:
         job: Optional[Job] = None
         try:
-            job = await jobq.service.job.get_one_ripe_job()
+            job = await jobq.service.job_db.get_one_ripe_job()
         except Exception as ex:
             logger.error("Failed to pull a job from queue")
             logger.exception(str(ex))
@@ -95,7 +95,7 @@ class JobWorker:
                 if job.tries < job.max_retries + 1:
                     logger.info(f"Scheduling retry {job.tries + 1}")
                     job.update_for_next_retry()
-                    await jobq.service.job.save(job)
+                    await jobq.service.job_db.save(job)
         except Exception as ex:
             logger.exception(str(ex))
 

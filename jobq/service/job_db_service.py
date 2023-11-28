@@ -12,7 +12,7 @@ from jobq.models.job import Job
 from jobq.transaction import write_transaction
 
 
-class JobService:
+class JobDbService:
     @staticmethod
     async def execute_with_result(stmt: str, *args) -> Optional[dict]:
         conn: Connection = db.connection_manager.get_connection()
