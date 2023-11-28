@@ -2,11 +2,14 @@ from quart import Quart
 
 import jobq.service
 from jobq.db import db
+from jobq.handlers.web import web as web_blueprint
 
 
 class ApplicationGenerator:
     def create_app(self) -> Quart:
         app = Quart(__name__)
+
+        app.register_blueprint(web_blueprint)
 
         self.set_startup_handlers(app)
         self.set_shutdown_handlers(app)

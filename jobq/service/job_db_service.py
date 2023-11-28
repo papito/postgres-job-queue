@@ -9,7 +9,7 @@ from quart import request
 from jobq.db import db
 from jobq.logger import logger
 from jobq.models.job import Job
-from jobq.transaction import write_transaction
+from jobq.transaction import read_transaction, write_transaction
 
 
 class JobDbService:
@@ -18,7 +18,11 @@ class JobDbService:
         conn: Connection = db.connection_manager.get_connection()
         log_stmt = re.sub(" +", " ", stmt.replace("\n", "")[0:80])
         worker_id = getattr(request, "index", 0)
-        logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
+
+        if worker_id:
+            logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
+        else:
+            logger.info(f"Executing [{log_stmt}...]")
 
         results = await conn.fetch(stmt, *args)
 
@@ -28,6 +32,20 @@ class JobDbService:
         assert len(results) < 2
         result: dict = results[0]
         return dict(result)
+
+    @staticmethod
+    async def execute_with_results(stmt, *args) -> list[dict]:
+        conn: Connection = db.connection_manager.get_connection()
+        log_stmt = re.sub(" +", " ", stmt.replace("\n", "")[0:80])
+        worker_id = getattr(request, "index", 0)
+
+        if worker_id:
+            logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
+        else:
+            logger.info(f"Executing [{log_stmt}...]")
+
+        results = await conn.fetch(stmt, *args)
+        return [dict(x) for x in results]
 
     @write_transaction
     async def save(self, obj: Job) -> Job:
@@ -76,3 +94,13 @@ class JobDbService:
             return None
 
         return Job.from_db(result)
+
+    @read_transaction
+    async def get_all_jobs(self) -> list[Job]:
+        results = await self.execute_with_results("SELECT *, id::text FROM job")
+
+        jobs: list[Job] = []
+        for result in results:
+            jobs.append(Job.from_db(result))
+
+        return jobs

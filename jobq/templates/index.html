@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Postgres Job Queue Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: darkslategrey;
+            color: white;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",sans-serif;        }
+
+        #content {
+            display: grid;
+            grid-template-rows: auto;
+            grid-row-gap: 30px;
+        }
+
+        #header {
+            display: grid;
+            place-items: center;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        #status {
+            display: grid;
+            place-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: orange;
+        }
+
+        #time {
+            display: grid;
+            place-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: greenyellow;
+        }
+
+        #jobs {
+            display: grid;
+            grid-template-rows: auto;
+            grid-row-gap: 20px;
+            justify-items: center;
+        }
+
+        .job {
+            display: grid;
+            grid-template-columns: 200px 500px;
+            border: 1px solid greenyellow;
+            border-radius: 5px;
+        }
+
+        .job span {
+            margin-top: 10px;
+            padding: 4px;
+        }
+
+        .job .field {
+            color: yellow;
+            font-weight: bold;
+        }
+
+        #create {
+            display: grid;
+            place-items: center;
+        }
+
+        .action-button {
+            appearance: none;
+            border: 1px solid orange;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+            font-size: .8em;
+            font-weight: bold;
+            line-height: 1em;
+            padding: 4px 16px;
+            text-align: center;
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            white-space: nowrap;
+        }
+
+        #create a {
+            font-size: 2em;
+        }
+    </style>
+
+</head>
+<body>
+
+<div id="content">
+    <div id="header">
+        Postgres and Quart Job Queue Example
+    </div>
+
+    <div id="status">
+        There are {{ jobs | length }} queued jobs
+    </div>
+
+    <div id="create">
+        <a href="/create"><button class="action-button">Create a job</button></a>
+    </div>
+
+    <div id="time">
+        {{ time }} UTC
+    </div>
+
+    <div id="jobs">
+        {% for job in jobs %}
+        <div class="job">
+            <span class="field">ID:</span><span>{{ job.id }}</span>
+            <span class="field">RIPE AT:</span><span>{{ job.ripe_at.strftime("%H:%M:%S") }} UTC</span>
+            <span class="field">ARGS: </span><span>{{ job.arguments }}</span>
+
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+</body>
+
+</html>

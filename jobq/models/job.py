@@ -14,12 +14,12 @@ class JobType(Enum):
 
 
 class Job(BaseModel):
-    id: Optional[str]
+    id: Optional[str] = None
     job_type: JobType
     tries: int = 0
     max_retries: int = Const.Jobs.MAX_RETRIES
     base_retry_minutes: int = Const.Jobs.BASE_RETRY_MINUTES
-    ripe_at: Optional[datetime.datetime]
+    ripe_at: Optional[datetime.datetime] = None
     arguments: dict[str, int | str | bool] = {}
     completed: bool = False
 
