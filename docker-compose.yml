@@ -1,0 +1,12 @@
+version: '3'
+services:
+  jobq_postgres:
+    image: postgres:15.0
+    ports:
+      - "5532:5432"
+    environment:
+      - POSTGRES_DB=jobq
+      - POSTGRES_USER=dba
+      - POSTGRES_PASSWORD=dba
+    container_name: jobq-postgres
+    command: ["postgres", "-c", "log_statement=all"]
