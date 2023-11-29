@@ -3,7 +3,7 @@ from enum import Enum
 from json import loads
 from typing import Optional, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from jobq.constants import Const
 
@@ -23,9 +23,7 @@ class Job(BaseModel):
     arguments: dict[str, int | str | bool] = {}
     completed: bool = False
 
-    class Config:
-        populate_by_name = True  # to allow value assignment by snake AND camelCase
-        use_enum_values = True  # to use enum_instance.value during serialization to JSON and dict
+    model_config = ConfigDict(populate_by_name=True, use_enum_values=True)
 
     @classmethod
     def from_db(cls: Type["Job"], db_data: dict) -> "Job":

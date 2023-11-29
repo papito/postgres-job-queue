@@ -13,19 +13,19 @@ shell:
 	@poetry shell
 
 up:
-	docker-compose up
+	docker-compose -f docker-compose.yml -f docker-compose.test.yml up
+
+test:
+	@export ENV=TEST && poetry run pytest tests
 
 dev:
-	poetry run python runserver.py
+	@export ENV=LOCAL && poetry run python runserver.py
 
 schema:
 	@export ENV=LOCAL && poetry run python init_schema.py
 
 lint:
-	poetry run isort jobq
-	poetry run black --line-length 120 jobq/
-	poetry run flake8 jobq/
-	poetry run mypy --check-untyped-defs jobq/
-
-info:
-	@poetry env info
+	poetry run isort jobq/ tests/
+	poetry run black --line-length 120 jobq/ tests/
+	poetry run flake8 jobq/ tests/
+	poetry run mypy --check-untyped-defs jobq/ tests/

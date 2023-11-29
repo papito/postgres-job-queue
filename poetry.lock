@@ -951,6 +951,18 @@ files = [
 ]
 
 [[package]]
+name = "types-psycopg2"
+version = "2.9.21.18"
+description = "Typing stubs for psycopg2"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "types-psycopg2-2.9.21.18.tar.gz", hash = "sha256:5082c61e8e400ac9eda06ec2e0f11a9885c575339bc1bf9b61754021fb259de7"},
+    {file = "types_psycopg2-2.9.21.18-py3-none-any.whl", hash = "sha256:66b8a882a878003f963a3a004dff328d7d34bfe1802c8bc625d24db79206130b"},
+]
+
+[[package]]
 name = "types-toml"
 version = "0.1.5"
 description = "Typing stubs for toml"
@@ -1010,4 +1022,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ba3653341ea59239f2ceb521996e11bb96ea675c617e9060e47e460ba55d4150"
+content-hash = "c6daa7f6fcd8a3ce202a7093a22eb239e893a83414959134a866f7ca6b6edfdb"

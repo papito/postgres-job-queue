@@ -4,7 +4,7 @@ import re
 from typing import Optional
 
 from asyncpg import Connection  # type: ignore
-from quart import request
+from quart import has_request_context, request
 
 from jobq.db import db
 from jobq.logger import logger
@@ -17,9 +17,9 @@ class JobDbService:
     async def execute_with_result(stmt: str, *args) -> Optional[dict]:
         conn: Connection = db.connection_manager.get_connection()
         log_stmt = re.sub(" +", " ", stmt.replace("\n", "")[0:80])
-        worker_id = getattr(request, "index", 0)
 
-        if worker_id:
+        if has_request_context():
+            worker_id = getattr(request, "index", 0)
             logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
         else:
             logger.info(f"Executing [{log_stmt}...]")
@@ -37,9 +37,9 @@ class JobDbService:
     async def execute_with_results(stmt, *args) -> list[dict]:
         conn: Connection = db.connection_manager.get_connection()
         log_stmt = re.sub(" +", " ", stmt.replace("\n", "")[0:80])
-        worker_id = getattr(request, "index", 0)
 
-        if worker_id:
+        if has_request_context():
+            worker_id = getattr(request, "index", 0)
             logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
         else:
             logger.info(f"Executing [{log_stmt}...]")
