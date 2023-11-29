@@ -36,9 +36,14 @@ async def favicon():
 @read_transaction
 async def index():
     jobs: list[Job] = await jobq.service.job_db.get_all_jobs()
+    workers = jobq.service.job_worker.workers
 
     now = datetime.datetime.utcnow()
-    return await render_template("index.html", jobs=jobs, time=now.strftime("%H:%M:%S"))
+    return await render_template(
+        "index.html",
+        jobs=jobs,
+        workers=workers,
+        time=now.strftime("%H:%M:%S"))
 
 
 @web.get("/create")

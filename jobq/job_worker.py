@@ -56,7 +56,7 @@ class JobWorker:
 
             # A little unorthodox to use a test method, but it's just a wrapper that sets
             # the boring defaults to create request context (we need access to Quart.g - global
-            # request context - so store connection info in)
+            # request context - to store connection info in)
             async with self.app.test_request_context("/job_worker"):
                 setattr(request, "index", self.worker_id)
                 await self.pull_and_execute()
