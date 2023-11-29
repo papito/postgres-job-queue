@@ -1,12 +1,13 @@
 import asyncio
+import logging
 import os
 from typing import Optional
 
 from quart import Quart, request
+from siftlog import SiftLog  # type: ignore
 
 import jobq.service
 from jobq.constants import Const
-from jobq.logger import logger
 from jobq.models.job import Job
 from jobq.transaction import write_transaction
 
@@ -14,10 +15,11 @@ from jobq.transaction import write_transaction
 class JobWorker:
     app: Quart
     worker_id: int
+    logger: SiftLog
     _stop_flag: bool
     stopped: bool
     polling_interval = int(os.environ.get(Const.Config.POLLING_INTERVAL, 5))
-    sound_off_every_cycles = 100
+    sound_off_every_cycles = 50
 
     def __init__(self, worker_id, app: Quart):
         self._stop_flag = False
@@ -25,21 +27,27 @@ class JobWorker:
         self.stopped = True
         self.app = app
 
+        core_logger = logging.getLogger(Const.LOG_NAME)
+        self.logger = SiftLog(
+            core_logger,
+            worker_id=f"#{self.worker_id}",
+        )
+
     def request_stop(self):
-        logger.info(f"Telling worker #{self.worker_id} to stop")
+        self.logger.info("Telling worker to stop")
         self._stop_flag = True
 
     async def run(self):
-        logger.info(f"Starting worker #{self.worker_id}")
+        self.logger.info("Starting worker")
         self.stopped = False
 
-        cycles = 0
+        sound_off_cycles = 0
 
         while not self._stop_flag:
-            cycles = cycles + 1
-            if cycles >= self.sound_off_every_cycles:
-                logger.info(f"WORKER {self.worker_id} is still in the fight!")
-                cycles = 0
+            sound_off_cycles = sound_off_cycles + 1
+            if sound_off_cycles >= self.sound_off_every_cycles:
+                self.logger.info("WORKER is still in the fight!")
+                sound_off_cycles = 0
 
             await asyncio.sleep(self.polling_interval)
 
@@ -54,13 +62,13 @@ class JobWorker:
                 await self.pull_and_execute()
 
         self.stopped = True
-        logger.info(f"Worker {self.worker_id} is done")
+        self.logger.info("Worker is done")
 
     async def pull_and_execute(self) -> Optional[Job]:
         try:
             return await self._pull_and_execute()
         except Exception as ex:
-            logger.exception(str(ex))
+            self.logger.exception(str(ex))
 
         return None
 
@@ -70,33 +78,32 @@ class JobWorker:
         try:
             job = await jobq.service.job_db.get_one_ripe_job()
         except Exception as ex:
-            logger.error("Failed to pull a job from queue")
-            logger.exception(str(ex))
+            self.logger.error("Failed to pull a job from queue")
+            self.logger.exception(str(ex))
 
         if not job:
-            logger.info(f"No jobs on worker [{self.worker_id}]")
+            self.logger.info("No ripe jobs for worker")
             return None
 
-        logger.info(f"We have a JOB TO DO of type [{job.job_type}]")
+        self.logger.info(f"We have a JOB TO DO of type [{job.job_type}]")
 
         try:
-            logger.info("About to rumble")
             await jobq.service.job_execution.execute(job)
             job.completed = True
-            logger.info("Job succeeded")
+            self.logger.info("Job succeeded")
         except Exception as ex:
-            logger.warn("Job did not succeed")
-            logger.exception(str(ex))
+            self.logger.warn("Job did not succeed")
+            self.logger.exception(str(ex))
 
         # if the job did not succeed, reschedule a retry if any, and bail
         try:
             if not job.completed:
                 job.tries = job.tries + 1
                 if job.tries < job.max_retries + 1:
-                    logger.info(f"Scheduling retry {job.tries + 1}")
+                    self.logger.info(f"Scheduling retry {job.tries + 1}")
                     job.update_for_next_retry()
                     await jobq.service.job_db.save(job)
         except Exception as ex:
-            logger.exception(str(ex))
+            self.logger.exception(str(ex))
 
         return job
