@@ -16,7 +16,7 @@ class DbConnectionManager:
 
     @property
     def request_connection_name(self) -> str:
-        # get unique connection name for a request, so we can find it later
+        # get unique connection name for a request, so we can refer to it later
         index: int
         if has_request_context():
             index = getattr(request, "index", 0)
@@ -35,7 +35,7 @@ class DbConnectionManager:
             password=os.environ.get(Const.Config.DB.DB_PASSWORD),
             host=os.environ.get(Const.Config.DB.DB_HOST),
             port=os.environ.get(Const.Config.DB.DB_PORT),
-            server_settings={"jit": "off", "application_name": "Friendly Fire"},
+            server_settings={"jit": "off", "application_name": "Postgres Queue Example"},
         )
         logger.info("CREATED connection pool...")
 
@@ -54,18 +54,17 @@ class DbConnectionManager:
     async def release_connection(self) -> None:
         conn: Connection = getattr(g, self.request_connection_name, None)
         if not conn:
-            logger.debug("No connection to release")
             return
 
         pool: Optional[Pool] = getattr(g, "pool", None)
         if not pool:
-            logger.debug("No connection pool")
             return
 
         logger.trace(f"Releasing connection {id(conn)} from {pool}")
         await pool.release(conn)
         setattr(g, self.request_connection_name, None)
 
+    # saves the connection in the global request context, so we can use it throughout the request
     def set_connection(self, conn_from_context: Connection, pool: Optional[Pool] = None) -> None:
         logger.trace(f"Setting connection {id(conn_from_context)} from {pool}")
         setattr(g, self.request_connection_name, conn_from_context)
@@ -82,7 +81,6 @@ class DbConnectionManager:
         conn: Connection = getattr(g, self.request_connection_name, None)
 
         if not conn:
-            logger.debug("No connection to rollback")
             return
 
         logger.warning(f"*ROLLBACK* DB connection {id(conn)}")

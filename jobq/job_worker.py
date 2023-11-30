@@ -19,7 +19,8 @@ class JobWorker:
     _stop_flag: bool
     stopped: bool
     polling_interval = int(os.environ.get(Const.Config.POLLING_INTERVAL, 5))
-    sound_off_every_cycles = 50
+    # after each X sleep cycles, the worker will squak
+    sound_off_every_cycles = 100
 
     def __init__(self, worker_id, app: Quart):
         self._stop_flag = False
@@ -28,6 +29,8 @@ class JobWorker:
         self.app = app
 
         core_logger = logging.getLogger(Const.LOG_NAME)
+
+        # A worker has its own log instance as it has persistent properties to be logged (worker id)
         self.logger = SiftLog(
             core_logger,
             worker_id=f"#{self.worker_id}",
@@ -46,7 +49,7 @@ class JobWorker:
         while not self._stop_flag:
             sound_off_cycles = sound_off_cycles + 1
             if sound_off_cycles >= self.sound_off_every_cycles:
-                self.logger.info("WORKER is still in the fight!")
+                self.logger.info("Worker is still in the fight!")
                 sound_off_cycles = 0
 
             await asyncio.sleep(self.polling_interval)
@@ -68,6 +71,7 @@ class JobWorker:
         try:
             return await self._pull_and_execute()
         except Exception as ex:
+            # important to swallow all exceptions so the worker does not exit
             self.logger.exception(str(ex))
 
         return None
@@ -75,6 +79,7 @@ class JobWorker:
     @write_transaction
     async def _pull_and_execute(self) -> Optional[Job]:
         job: Optional[Job] = None
+
         try:
             job = await jobq.service.job_db.get_one_ripe_job()
         except Exception as ex:
@@ -82,7 +87,7 @@ class JobWorker:
             self.logger.exception(str(ex))
 
         if not job:
-            self.logger.info("No ripe jobs for worker")
+            self.logger.info("No ripe jobs for worker :(")
             return None
 
         self.logger.info(f"We have a JOB TO DO of type [{job.job_type}]")

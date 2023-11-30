@@ -13,6 +13,10 @@ from jobq.transaction import read_transaction, write_transaction
 
 
 class JobDbService:
+    """
+    Data access layer for raw Squeel
+    """
+
     @staticmethod
     async def execute_with_result(stmt: str, *args) -> Optional[dict]:
         conn: Connection = db.connection_manager.get_connection()
@@ -22,6 +26,7 @@ class JobDbService:
             worker_id = getattr(request, "index", 0)
             logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
         else:
+            # not executed in a worker
             logger.info(f"Executing [{log_stmt}...]")
 
         results = await conn.fetch(stmt, *args)
@@ -42,6 +47,7 @@ class JobDbService:
             worker_id = getattr(request, "index", 0)
             logger.info(f"Worker #{worker_id} executing [{log_stmt}...]")
         else:
+            # not executed in a worker
             logger.info(f"Executing [{log_stmt}...]")
 
         results = await conn.fetch(stmt, *args)
@@ -68,6 +74,7 @@ class JobDbService:
 
         job: Job = Job.model_validate(obj)
         job.id = res["id"]
+
         logger.info(f"Job SCHEDULED. {job}")
 
         return job

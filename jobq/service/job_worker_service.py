@@ -9,6 +9,10 @@ from jobq.logger import logger
 
 
 class JobWorkerService:
+    """
+    Orchestrates worker background tasks
+    """
+
     workers: list[JobWorker] = []
 
     def start(self, app: Quart):

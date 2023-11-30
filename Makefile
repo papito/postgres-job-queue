@@ -16,7 +16,7 @@ up:
 	docker-compose -f docker-compose.yml -f docker-compose.test.yml up
 
 test:
-	@export ENV=TEST && poetry run pytest tests
+	poetry run pytest tests
 
 dev:
 	@export ENV=LOCAL && poetry run python runserver.py

@@ -27,11 +27,6 @@ async def handle_unknown_exception(ex: Exception) -> tuple[str, int]:
     return await render_template_string(f"{ex.__class__.__name__}: {str(ex)}"), 500
 
 
-@web.route("/favicon.ico")
-async def favicon():
-    return redirect(url_for("static", filename="images/favicon.ico"), code=302)
-
-
 @web.get("/")
 @read_transaction
 async def index():
@@ -51,7 +46,7 @@ async def create():
         job_type=job_type,
         # The arbitrary argument must be unique because the schema does not allow the same job
         # type with the same arguments.
-        # This restriction of course can be removed by deleting the index
+        # This restriction of course can be removed by deleting the index in schema.sql
         arguments={
             "arbitrary_arg_1": str(uuid.uuid4()),
         },

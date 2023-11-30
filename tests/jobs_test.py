@@ -29,6 +29,8 @@ class JobsTest(unittest.IsolatedAsyncioTestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        # Note that this is *synchronous* psycopg2 connection.
+        # There is no asynchronous setUpClass()
         conn = psycopg2.connect(
             database=os.environ.get(Const.Config.DB.DB_NAME),
             user=os.environ.get(Const.Config.DB.DB_USER),
@@ -36,7 +38,10 @@ class JobsTest(unittest.IsolatedAsyncioTestCase):
             host=os.environ.get(Const.Config.DB.DB_HOST),
             port=os.environ.get(Const.Config.DB.DB_PORT),
         )
+
+        # init the database with the schema file
         sql = importlib.resources.files("jobq").joinpath("schema.sql").read_text()
+
         with conn.cursor() as cur:
             cur.execute("".join(sql))  # type: ignore
             conn.commit()

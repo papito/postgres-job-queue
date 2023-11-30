@@ -10,7 +10,7 @@ from jobq.logger import logger
 def write_transaction(f):
     """
     A method decorated with this will be within a DB write transaction.
-    All methods called downstream, will reuse the top level transaction.
+    All methods called downstream  will reuse the top level transaction.
 
     If there is an error, the transaction will be rolled back at the top level method.
     """
@@ -41,6 +41,13 @@ def write_transaction(f):
 
 
 def read_transaction(f):
+    """
+    A method decorated with this will be within a DB write transaction.
+    All methods called downstream  will reuse the top level transaction.
+
+    An SQL statement that attempts to write within this context is going to jail
+    """
+
     @wraps(f)
     async def decorated_function(*args, **kwargs):
         logger.trace("In RO transaction")
@@ -58,7 +65,7 @@ def read_transaction(f):
         result: Optional[Any]
 
         async with conn_ctx as conn:
-            async with conn.transaction(readonly=True):
+            async with conn.transaction(readonly=True):  # <-- mhmmm
                 db.connection_manager.set_connection(conn, db.connection_manager.conn_pool)
                 result = await f(*args, **kwargs)
 

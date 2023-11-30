@@ -6,7 +6,9 @@ CREATE TABLE job(
     job_type TEXT NOT NULL,
     arguments JSONB NOT NULL DEFAULT '{}'::JSONB,
     unique_signature VARCHAR GENERATED ALWAYS AS (md5(job_type || arguments::text)) STORED,
+    -- how many tries it has been
     tries INT NOT NULL DEFAULT 0,
+    -- how many tries it can be
     max_retries INT NOT NULL,
     base_retry_minutes INT NOT NULL,
     -- NULL ripe time means the job is immediate and runs as soon as a worker is ready to rumble
@@ -17,6 +19,8 @@ CREATE TABLE job(
 
 CREATE INDEX job_ripe_at_idx ON job(ripe_at);
 CREATE UNIQUE INDEX job_unique_signature_idx ON job(unique_signature);
+
+--- function and trigger to update a job's updated_at timestamp whenever there is save event
 
 CREATE OR REPLACE FUNCTION update_changed_at()
     RETURNS TRIGGER AS $$
