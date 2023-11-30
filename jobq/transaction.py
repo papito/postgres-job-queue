@@ -42,7 +42,7 @@ def write_transaction(f):
 
 def read_transaction(f):
     """
-    A method decorated with this will be within a DB write transaction.
+    A method decorated with this will be within a DB read transaction.
     All methods called downstream  will reuse the top level transaction.
 
     An SQL statement that attempts to write within this context is going to jail
