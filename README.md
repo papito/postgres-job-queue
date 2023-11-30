@@ -1,6 +1,6 @@
 # A job queue example with Postgres
 
-[See the blog post](https://renegadeotter.com/2023/12/01/job-queues-with-postrgres.html)
+[See the blog post](https://renegadeotter.com/2023/11/30/job-queues-with-postrgres.html)
 which goes into more detail about the features of this project. This README only describes the steps of getting the code
 up and running locally.
 
