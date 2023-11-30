@@ -46,7 +46,7 @@ Go back to the server console to see what the workers are doing.
 
 ## Testing
 
-    @export ENV=TEST && poetry run pytest tests
+    poetry run pytest tests
     
     OR
     
