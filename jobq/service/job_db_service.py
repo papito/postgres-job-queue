@@ -83,9 +83,7 @@ class JobDbService:
                          FOR UPDATE
                         SKIP LOCKED LIMIT 1
                   )
-              RETURNING *,
-                        id::text,
-                        job_type
+              RETURNING *, id::text
             """,
             datetime.datetime.now(),
         )

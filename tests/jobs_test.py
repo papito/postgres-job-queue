@@ -44,7 +44,6 @@ class JobsTest(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self) -> None:
         self.app: Quart = create_app()
-        self.client = self.app.test_client()
 
         self.ctx: quart.ctx.AppContext = self.app.app_context()
         await self.ctx.push()

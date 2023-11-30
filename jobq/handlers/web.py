@@ -39,11 +39,7 @@ async def index():
     workers = jobq.service.job_worker.workers
 
     now = datetime.datetime.utcnow()
-    return await render_template(
-        "index.html",
-        jobs=jobs,
-        workers=workers,
-        time=now.strftime("%H:%M:%S"))
+    return await render_template("index.html", jobs=jobs, workers=workers, time=now.strftime("%H:%M:%S"))
 
 
 @web.get("/create")
